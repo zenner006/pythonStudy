@@ -1171,3 +1171,199 @@ a -0.908796  0.173288  0.295355
 
 ## 5.3  汇总和计算描述统计
 
+​	`sum() mean()`: 参数axis,skipna,level #轴，是否排除缺失值，层次化索引
+
+```python
+>>> df = DataFrame([[1.4,np.nan],[7.1,-4.5],[np.nan,np.nan],[0.75,-1.3]],index=['a','b','c','d'],columns=['one','two'])
+>>> df
+    one  two
+a  1.40  NaN
+b  7.10 -4.5
+c   NaN  NaN
+d  0.75 -1.3
+>>> df.sum()
+one    9.25
+two   -5.80
+dtype: float64
+>>> df.su,(axis=1)
+a    1.40
+b    2.60
+c    0.00
+d   -0.55
+dtype: float64
+>>> df.sum(axis=1,skipna=False)
+a     NaN
+b    2.60
+c     NaN
+d   -0.55
+dtype: float64
+>>> df.mean(axis=1,skipna=False)	# 平均数
+a      NaN
+b    1.300
+c      NaN
+d   -0.275
+dtype: float64
+```
+
+​	`idxmin,idxmax`:达到最小值或最大值的索引；这些方法是间接统计
+
+```python
+>>> df.idxmax()
+one    b
+two    d
+dtype: object
+>>> 
+```
+
+​	`cumsum()`：累计型的；
+
+```python
+>>> df.cumsum()
+    one  two
+a  1.40  NaN
+b  8.50 -4.5
+c   NaN  NaN
+d  9.25 -5.8
+>>> 
+```
+
+​	`discribe()`: 多个汇总统计；非数值型数据会产生另外一种汇总统计：
+
+```python
+>>> df.describe()
+            one       two
+count  3.000000  2.000000
+mean   3.083333 -2.900000
+std    3.493685  2.262742
+min    0.750000 -4.500000
+25%    1.075000 -3.700000
+50%    1.400000 -2.900000
+75%    4.250000 -2.100000
+max    7.100000 -1.300000
+>>> obj = Series(['a','a','b','c']*4)
+>>> obj
+0     a
+1     a
+2     b
+3     c
+4     a
+5     a
+6     b
+7     c
+8     a
+9     a
+10    b
+11    c
+12    a
+13    a
+14    b
+15    c
+dtype: object
+>>> obj.describe()
+count     16
+unique     3
+top        a
+freq       8
+dtype: object
+```
+
+​	`count`：非NA值的个数
+
+​	`argmin,argmax`: 最小/大值的索引位置（整数）
+
+​	`quantile`: 计算样本分位数（0~1）
+
+​	`var`: 样本的方差
+
+​	`std`: 样本的标准差
+
+​	`mad`: 根据平均值计算平均绝对离差
+
+### 5.3.1 唯一值、值计数以及成员资格
+
+​	`isin()`	
+
+​	`unique()`： 计算唯一值，返回数组，顺序是发现顺序
+
+​	 `value_counts()`: 各个值出现的次数
+
+## 5.4 处理缺失值
+
+​	`dropna()`去除nan值
+
+​	`fillna`填充nan值
+
+​	`isnull`：是否为nan
+
+​	`notnull`：isnull的否定
+
+```python
+>>> data = Series([1,np.nan,3.5,np.nan,7])
+>>> data
+0    1.0
+1    NaN
+2    3.5
+3    NaN
+4    7.0
+dtype: float64
+>>> data.dropna()
+0    1.0
+2    3.5
+4    7.0
+dtype: float64
+>>> data[data.notnull()]	# notnull也可以到达这个目的
+0    1.0
+2    3.5
+4    7.0
+dtype: float64
+
+# DataFrame 问题会复杂一些
+>>> from numpy import nan as NA
+>>> data = DataFrame([[1.,6.5,3.],[1.,NA,NA],[NA,NA,NA],[NA,6.5,3.]])
+>>> data
+     0    1    2
+0  1.0  6.5  3.0
+1  1.0  NaN  NaN
+2  NaN  NaN  NaN
+3  NaN  6.5  3.0
+>>> data.dropna()
+     0    1    2
+0  1.0  6.5  3.0
+
+# 传入how='all',丢弃全为NA的值
+>>> data.dropna(how='all')
+     0    1    2
+0  1.0  6.5  3.0
+1  1.0  NaN  NaN
+3  NaN  6.5  3.0
+# 传入axis='1',丢弃列有NA的值
+
+```
+
+​	填补`nan`值：
+
+```python
+>>> data
+     0    1    2
+0  1.0  6.5  3.0
+1  1.0  NaN  NaN
+2  NaN  NaN  NaN
+3  NaN  6.5  3.0
+>>> data.fillna(0)
+     0    1    2
+0  1.0  6.5  3.0
+1  1.0  0.0  0.0
+2  0.0  0.0  0.0
+3  0.0  6.5  3.0
+# 用字典调用fillna可以对不同列填充不同值：
+>>> data.fillna({0:0.1,1:0.2,2:0.3})
+     0    1    2
+0  1.0  6.5  3.0
+1  1.0  0.2  0.3
+2  0.1  0.2  0.3
+3  0.1  6.5  3.0
+# fillna的参数：axis：轴；inplace：修改调用者对象而不产生副本；method=’ffill‘：填充方式；limit：可以连续填充的最大整数
+```
+
+## 5.5 层次化索引
+
